@@ -1,0 +1,240 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+using namespace std;
+
+/**
+ * Интерполирующий поиск (Interpolation Search)
+ * Улучшенная версия бинарного поиска, которая использует значения элементов
+ * для предсказания позиции искомого элемента
+ * 
+ * @param arr - отсортированный массив для поиска
+ * @param target - искомое значение
+ * @return индекс найденного элемента или -1 если не найден
+ */
+int interpolationSearch(const vector<int>& arr, int target) {
+    int low = 0;
+    int high = arr.size() - 1;
+    int step = 1;
+    
+    cout << "Интерполирующий поиск элемента " << target << ":" << endl;
+    cout << "Отсортированный массив: ";
+    for (int num : arr) cout << num << " ";
+    cout << endl << endl;
+    
+    // Проверяем, что target находится в диапазоне массива
+    if (target < arr[low] || target > arr[high]) {
+        cout << "Элемент " << target << " вне диапазона массива [" 
+             << arr[low] << ", " << arr[high] << "]" << endl;
+        return -1;
+    }
+    
+    while (low <= high && target >= arr[low] && target <= arr[high]) {
+        // Если остался один элемент
+        if (low == high) {
+            cout << "Шаг " << step << ": остался один элемент" << endl;
+            if (arr[low] == target) {
+                cout << "  arr[" << low << "] = " << arr[low] << " == " << target 
+                     << " -> ЭЛЕМЕНТ НАЙДЕН!" << endl;
+                return low;
+            }
+            break;
+        }
+        
+        // Формула интерполяции для предсказания позиции
+        // pos = low + ((target - arr[low]) * (high - low)) / (arr[high] - arr[low])
+        int pos = low + ((double)(target - arr[low]) * (high - low)) / (arr[high] - arr[low]);
+        
+        // Обеспечиваем, чтобы pos оставался в границах
+        pos = max(low, min(pos, high));
+        
+        cout << "Шаг " << step++ << ":" << endl;
+        cout << "  low = " << low << " (" << arr[low] << "), "
+             << "high = " << high << " (" << arr[high] << ")" << endl;
+        cout << "  Формула: pos = " << low << " + ((" << target << " - " << arr[low] 
+             << ") * (" << high << " - " << low << ")) / (" << arr[high] << " - " << arr[low] << ")" << endl;
+        cout << "  Вычисленная позиция: " << pos << " (arr[" << pos << "] = " << arr[pos] << ")" << endl;
+        
+        // Проверяем элемент на вычисленной позиции
+        if (arr[pos] == target) {
+            cout << "  arr[" << pos << "] = " << arr[pos] << " == " << target 
+                 << " -> ЭЛЕМЕНТ НАЙДЕН!" << endl;
+            return pos;
+        }
+        
+        // Если target меньше, ищем в левой части
+        if (arr[pos] > target) {
+            cout << "  arr[" << pos << "] = " << arr[pos] << " > " << target 
+                 << " -> ищем в ЛЕВОЙ части" << endl;
+            high = pos - 1;
+        } 
+        // Если target больше, ищем в правой части
+        else {
+            cout << "  arr[" << pos << "] = " << arr[pos] << " < " << target 
+                 << " -> ищем в ПРАВОЙ части" << endl;
+            low = pos + 1;
+        }
+        
+        cout << "  Новые границы: low = " << low << ", high = " << high << endl;
+    }
+    
+    cout << "Элемент " << target << " не найден в массиве" << endl;
+    return -1;
+}
+
+/**
+ * Рекурсивная версия интерполирующего поиска
+ */
+int interpolationSearchRecursive(const vector<int>& arr, int target, int low, int high, int depth = 0) {
+    string indent(depth * 2, ' ');
+    
+    cout << indent << "interpolationSearch(" << low << ", " << high << ")" << endl;
+    
+    // Проверка базовых случаев
+    if (low > high || target < arr[low] || target > arr[high]) {
+        cout << indent << "  Базовый случай: элемент вне границ" << endl;
+        return -1;
+    }
+    
+    // Формула интерполяции
+    int pos = low + ((double)(target - arr[low]) * (high - low)) / (arr[high] - arr[low]);
+    pos = max(low, min(pos, high));
+    
+    cout << indent << "  pos = " << pos << " (arr[" << pos << "] = " << arr[pos] << ")" << endl;
+    
+    if (arr[pos] == target) {
+        cout << indent << "  arr[" << pos << "] = " << arr[pos] << " == " << target 
+             << " -> НАЙДЕН!" << endl;
+        return pos;
+    }
+    
+    if (arr[pos] > target) {
+        cout << indent << "  arr[" << pos << "] = " << arr[pos] << " > " << target 
+             << " -> идем влево" << endl;
+        return interpolationSearchRecursive(arr, target, low, pos - 1, depth + 1);
+    } else {
+        cout << indent << "  arr[" << pos << "] = " << arr[pos] << " < " << target 
+             << " -> идем вправо" << endl;
+        return interpolationSearchRecursive(arr, target, pos + 1, high, depth + 1);
+    }
+}
+
+/**
+ * Сравнение интерполирующего и бинарного поиска
+ */
+void compareWithBinarySearch(const vector<int>& arr, int target) {
+    cout << "\n=== СРАВНЕНИЕ С БИНАРНЫМ ПОИСКОМ ===" << endl;
+    
+    // Интерполирующий поиск
+    cout << "Интерполирующий поиск:" << endl;
+    int result1 = interpolationSearch(arr, target);
+    
+    // Бинарный поиск (имитация)
+    cout << "\nБинарный поиск:" << endl;
+    int low = 0;
+    int high = arr.size() - 1;
+    int steps = 0;
+    
+    while (low <= high) {
+        steps++;
+        int mid = low + (high - low) / 2;
+        
+        cout << "  Шаг " << steps << ": mid = " << mid << " (arr[" << mid << "] = " << arr[mid] << ")" << endl;
+        
+        if (arr[mid] == target) {
+            cout << "  Элемент найден за " << steps << " шагов" << endl;
+            break;
+        } else if (arr[mid] > target) {
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
+    }
+}
+
+/**
+ * Демонстрация на равномерно распределенных данных
+ */
+void demonstrateUniformDistribution() {
+    cout << "\n=== РАВНОМЕРНОЕ РАСПРЕДЕЛЕНИЕ ===" << endl;
+    
+    // Массив с равномерным распределением
+    vector<int> uniformArr;
+    for (int i = 0; i < 20; i++) {
+        uniformArr.push_back(i * 10); // 0, 10, 20, 30, ..., 190
+    }
+    
+    cout << "Массив с равномерным распределением: ";
+    for (int num : uniformArr) cout << num << " ";
+    cout << endl;
+    
+    // Поиск элемента в середине диапазона
+    interpolationSearch(uniformArr, 75);
+    
+    // Поиск элемента ближе к началу
+    interpolationSearch(uniformArr, 25);
+    
+    // Поиск элемента ближе к концу
+    interpolationSearch(uniformArr, 175);
+}
+
+/**
+ * Демонстрация на неравномерно распределенных данных
+ */
+void demonstrateNonUniformDistribution() {
+    cout << "\n=== НЕРАВНОМЕРНОЕ РАСПРЕДЕЛЕНИЕ ===" << endl;
+    
+    // Массив с неравномерным распределением
+    vector<int> nonUniformArr = {1, 2, 3, 10, 11, 12, 100, 101, 102, 1000, 1001};
+    
+    cout << "Массив с неравномерным распределением: ";
+    for (int num : nonUniformArr) cout << num << " ";
+    cout << endl;
+    
+    // Поиск в "плотной" области
+    interpolationSearch(nonUniformArr, 11);
+    
+    // Поиск в "разреженной" области
+    interpolationSearch(nonUniformArr, 100);
+}
+
+int main() {
+    cout << "ИНТЕРПОЛИРУЮЩИЙ ПОИСК (INTERPOLATION SEARCH) НА C++" << endl;
+    cout << "=================================================" << endl;
+    
+    // Пример 1: Основной пример
+    vector<int> arr1 = {10, 12, 13, 16, 18, 19, 20, 21, 22, 23, 24, 33, 35, 42, 47};
+    int target1 = 18;
+    
+    cout << "\nПример 1 - Основной пример:" << endl;
+    interpolationSearch(arr1, target1);
+    
+    // Пример 2: Рекурсивная версия
+    cout << "\nПример 2 - Рекурсивная версия:" << endl;
+    cout << "Поиск элемента 33:" << endl;
+    interpolationSearchRecursive(arr1, 33, 0, arr1.size() - 1);
+    
+    // Пример 3: Поиск несуществующего элемента
+    cout << "\nПример 3 - Поиск несуществующего элемента:" << endl;
+    interpolationSearch(arr1, 30);
+    
+    // Пример 4: Сравнение с бинарным поиском
+    compareWithBinarySearch(arr1, 21);
+    
+    // Пример 5: Равномерное распределение
+    demonstrateUniformDistribution();
+    
+    // Пример 6: Неравномерное распределение
+    demonstrateNonUniformDistribution();
+    
+    // Характеристики алгоритма
+    cout << "\n--- ХАРАКТЕРИСТИКИ АЛГОРИТМА ---" << endl;
+    cout << "• Лучший случай: O(log log n) - равномерное распределение" << endl;
+    cout << "• Средний случай: O(log log n)" << endl;
+    cout << "• Худший случай: O(n) - неравномерное распределение" << endl;
+    cout << "• Пространственная сложность: O(1)" << endl;
+    cout << "• Преимущества: Очень быстрый для равномерных данных" << endl;
+    cout << "• Недостатки: Медленный для неравномерных данных" << endl;
+    
+    return 0;
+}
